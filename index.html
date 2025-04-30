@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Light Scheduler</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        input[type="time"] {
+            padding: 8px;
+            margin: 10px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #status {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Light Scheduler</h2>
+        <label for="onTime">ON Time:</label>
+        <input type="time" id="onTime" required>
+        <br>
+        <label for="offTime">OFF Time:</label>
+        <input type="time" id="offTime" required>
+        <br>
+        <button onclick="sendSchedule()">Submit Schedule</button>
+        <div id="status">No schedule set</div>
+    </div>
+
+    <script>
+        const ws = new WebSocket('ws://localhost:8765');
+        
+        ws.onopen = () => {
+            console.log('Connected to WebSocket server');
+        };
+
+        ws.onmessage = (event) => {
+            document.getElementById('status').innerText = event.data;
+        };
+
+        function sendSchedule() {
+            const onTime = document.getElementById('onTime').value;
+            const offTime = document.getElementById('offTime').value;
+            
+            if (onTime && offTime) {
+                const schedule = JSON.stringify({ onTime, offTime });
+                ws.send(schedule);
+                document.getElementById('status').innerText = 'Schedule sent!';
+            } else {
+                document.getElementById('status').innerText = 'Please select both times';
+            }
+        }
+    </script>
+</body>
+</html>
